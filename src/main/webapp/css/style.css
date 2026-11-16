@@ -1,23 +1,17 @@
-
-body { background-color: #f5f5f5; }
-
-a { color: #c00000; }
-
-/* Barra superior */
-.navbar-cekalix { background-color: #c00000; }
-
-/* Encabezado de la tarjeta de login y registro */
-.marca { background-color: #c00000; color: white; }
-
-/* Botón principal */
-.btn-cekalix { background-color: #c00000; border-color: #c00000; color: white; }
-.btn-cekalix:hover { background-color: #900000; border-color: #900000; color: white; }
-
-/* Encabezado de las tablas */
-.tabla-cekalix thead { background-color: #c00000; color: white; }
-
-/* Tarjetas del menú de inicio */
-.tarjeta-menu { transition: transform .15s, box-shadow .15s; }
-.tarjeta-menu:hover { transform: translateY(-4px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15); }
-.icono { font-size: 2.5rem; }
-a.enlace-tarjeta { text-decoration: none; color: inherit; }
+:root {
+  --cekalix-red: #b5121b;
+  --cekalix-red-dark: #850d14;
+  --cekalix-gray: #f3f4f6;
+  --cekalix-text: #252525;
+}
+body { background: var(--cekalix-gray); color: var(--cekalix-text); }
+a { color: var(--cekalix-red); }
+.navbar-cekalix, .marca { background: var(--cekalix-red); color: #fff; }
+.btn-cekalix { background: var(--cekalix-red); border-color: var(--cekalix-red); color: #fff; }
+.btn-cekalix:hover, .btn-cekalix:focus { background: var(--cekalix-red-dark); border-color: var(--cekalix-red-dark); color: #fff; }
+.tabla-cekalix thead { background: var(--cekalix-red); color: #fff; }
+.card { border: 0; border-radius: 12px; }
+.tarjeta-menu { transition: transform .15s ease, box-shadow .15s ease; }
+.tarjeta-menu:hover { transform: translateY(-3px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.12); }
+.enlace-tarjeta { text-decoration: none; color: inherit; }
+.form-control:focus { border-color: var(--cekalix-red); box-shadow: 0 0 0 .2rem rgba(181,18,27,.12); }
