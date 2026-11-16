@@ -62,6 +62,7 @@
                         <th>Razón social</th>
                         <th>RUC</th>
                         <th>Teléfono</th>
+                        <th>Dirección</th>
                         <th class="text-center">Acción</th>
                     </tr>
                 </thead>
@@ -79,6 +80,7 @@
                         <td><%= c.getRazon_social() %></td>
                         <td><%= c.getRuc() %></td>
                         <td><%= c.getTelefono() == null ? "" : c.getTelefono() %></td>
+                        <td><%= c.getDireccion() == null ? "" : c.getDireccion() %></td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-outline-danger"
                                     data-bs-toggle="modal"
@@ -92,7 +94,7 @@
                     } else {
                 %>
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">No se encontraron clientes.</td>
+                        <td colspan="6" class="text-center text-muted py-4">No se encontraron clientes.</td>
                     </tr>
                 <%
                     }
@@ -140,6 +142,11 @@
                         <label class="form-label fw-semibold">Teléfono</label>
                         <input type="text" name="telefono" class="form-control"
                                value="<%= c.getTelefono() == null ? "" : c.getTelefono() %>" maxlength="15">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Dirección</label>
+                        <input type="text" name="direccion" class="form-control"
+                               value="<%= c.getDireccion() == null ? "" : c.getDireccion() %>" maxlength="150">
                     </div>
                 </div>
 
