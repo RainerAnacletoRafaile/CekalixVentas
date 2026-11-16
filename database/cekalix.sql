@@ -12,25 +12,14 @@ USE cekalix;
 
 -- Desactivar temporalmente las comprobaciones para permitir
 -- volver a ejecutar el script sin problemas de orden.
-SET FOREIGN_KEY_CHECKS = 0;
+-- Las tablas se crean si no existen; no se borran datos existentes.
 
-DROP TABLE IF EXISTS detalle_venta;
-DROP TABLE IF EXISTS venta;
-DROP TABLE IF EXISTS detalle_cotizacion;
-DROP TABLE IF EXISTS cotizacion;
-DROP TABLE IF EXISTS producto;
-DROP TABLE IF EXISTS cliente;
-DROP TABLE IF EXISTS usuario;
-DROP TABLE IF EXISTS rol;
-
-SET FOREIGN_KEY_CHECKS = 1;
-
-CREATE TABLE rol (
+CREATE TABLE IF NOT EXISTS rol (
     id_rol INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(30) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
 
-CREATE TABLE usuario (
+CREATE TABLE IF NOT EXISTS usuario (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     id_rol INT NOT NULL,
     nombre VARCHAR(25) NOT NULL,
@@ -41,7 +30,7 @@ CREATE TABLE usuario (
         FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
 ) ENGINE=InnoDB;
 
-CREATE TABLE cliente (
+CREATE TABLE IF NOT EXISTS cliente (
     id_cliente INT AUTO_INCREMENT PRIMARY KEY,
     razon_social VARCHAR(100) NOT NULL,
     ruc VARCHAR(11) NOT NULL UNIQUE,
@@ -49,7 +38,7 @@ CREATE TABLE cliente (
     direccion VARCHAR(50)
 ) ENGINE=InnoDB;
 
-CREATE TABLE producto (
+CREATE TABLE IF NOT EXISTS producto (
     id_producto INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL,
     medida VARCHAR(50),
@@ -59,7 +48,7 @@ CREATE TABLE producto (
     stock INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
-CREATE TABLE cotizacion (
+CREATE TABLE IF NOT EXISTS cotizacion (
     id_cotizacion INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT NOT NULL,
     id_usuario INT NOT NULL,
@@ -72,7 +61,7 @@ CREATE TABLE cotizacion (
         FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 ) ENGINE=InnoDB;
 
-CREATE TABLE detalle_cotizacion (
+CREATE TABLE IF NOT EXISTS detalle_cotizacion (
     id_detalle_cotizacion INT AUTO_INCREMENT PRIMARY KEY,
     id_cotizacion INT NOT NULL,
     id_producto INT NOT NULL,
@@ -86,7 +75,7 @@ CREATE TABLE detalle_cotizacion (
         FOREIGN KEY (id_producto) REFERENCES producto(id_producto)
 ) ENGINE=InnoDB;
 
-CREATE TABLE venta (
+CREATE TABLE IF NOT EXISTS venta (
     id_venta INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT NOT NULL,
     id_usuario INT NOT NULL,
@@ -102,7 +91,7 @@ CREATE TABLE venta (
         FOREIGN KEY (id_cotizacion) REFERENCES cotizacion(id_cotizacion)
 ) ENGINE=InnoDB;
 
-CREATE TABLE detalle_venta (
+CREATE TABLE IF NOT EXISTS detalle_venta (
     id_detalle_venta INT AUTO_INCREMENT PRIMARY KEY,
     id_venta INT NOT NULL,
     id_producto INT NOT NULL,
