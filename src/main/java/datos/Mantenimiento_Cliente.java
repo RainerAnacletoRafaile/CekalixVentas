@@ -4,96 +4,68 @@ import java.sql.*;
 import modelo.Cliente;
 
 public class Mantenimiento_Cliente extends Libreria {
+    private PreparedStatement pst;
 
-    PreparedStatement pst;
-
-    // Registrar cliente
     public boolean registro(Cliente c) {
+        String sql = "INSERT INTO cliente (razon_social, ruc, telefono, direccion) VALUES (?, ?, ?, ?)";
         try {
-            String sql = "INSERT INTO cliente "
-                       + "(razon_social, ruc, telefono) "
-                       + "VALUES (?, ?, ?)";
-
             pst = conexion().prepareStatement(sql);
-
             pst.setString(1, c.getRazon_social());
             pst.setString(2, c.getRuc());
             pst.setString(3, c.getTelefono());
-
-            pst.executeUpdate();
-
-            return true;
-
+            pst.setString(4, c.getDireccion());
+            return pst.executeUpdate() == 1;
         } catch (SQLException e) {
-            System.out.println("Error al registrar cliente " + e);
+            System.out.println("Error al registrar cliente: " + e.getMessage());
             return false;
         }
     }
 
-    // Consultar clientes
     public ResultSet consulta(String sql) {
         try {
             sen = conexion().createStatement();
             data = sen.executeQuery(sql);
-
         } catch (SQLException e) {
-            System.out.println("Error en la consulta " + e);
+            System.out.println("Error en la consulta: " + e.getMessage());
         }
-
         return data;
     }
 
-    // Buscar cliente por RUC
     public ResultSet busqueda(String ruc) {
         try {
-            String sql = "SELECT * FROM cliente WHERE ruc = ?";
-
-            pst = conexion().prepareStatement(sql);
+            pst = conexion().prepareStatement("SELECT * FROM cliente WHERE ruc = ?");
             pst.setString(1, ruc);
-
             data = pst.executeQuery();
-
         } catch (SQLException e) {
-            System.out.println("Error al buscar cliente " + e);
+            System.out.println("Error al buscar cliente: " + e.getMessage());
         }
-
         return data;
     }
 
-    // Actualizar cliente
     public boolean actualizar(Cliente c) {
+        String sql = "UPDATE cliente SET razon_social=?, ruc=?, telefono=?, direccion=? WHERE id_cliente=?";
         try {
-            String sql = "UPDATE cliente SET "
-                       + "razon_social = ?, ruc = ?, telefono = ? "
-                       + "WHERE id_cliente = ?";
-
             pst = conexion().prepareStatement(sql);
-
             pst.setString(1, c.getRazon_social());
             pst.setString(2, c.getRuc());
             pst.setString(3, c.getTelefono());
-            pst.setInt(4, c.getId_cliente());
-
-            pst.executeUpdate();
-
-            return true;
-
+            pst.setString(4, c.getDireccion());
+            pst.setInt(5, c.getId_cliente());
+            return pst.executeUpdate() == 1;
         } catch (SQLException e) {
-            System.out.println("Error al actualizar cliente " + e);
+            System.out.println("Error al actualizar cliente: " + e.getMessage());
             return false;
         }
     }
 
-    // Cerrar conexion
     public void cerrar() {
         try {
             if (data != null) data.close();
-            if (sen != null) sen.close();
             if (pst != null) pst.close();
+            if (sen != null) sen.close();
             if (conn != null) conn.close();
-
         } catch (SQLException e) {
-            System.out.println("Error al cerrar la conexion " + e);
+            System.out.println("Error al cerrar conexión: " + e.getMessage());
         }
     }
 }
