@@ -9,7 +9,7 @@ import java.util.List;
 
 import modelo.Producto;
 
-public class Mantenimiento_Producto extends ConexionBD {
+public class Mantenimiento_Producto {
 
     public List<Producto> listar() {
         String sql = "SELECT id_producto, nombre, precio, stock " +
