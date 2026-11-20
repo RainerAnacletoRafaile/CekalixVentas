@@ -1,7 +1,6 @@
 -- =====================================================
 -- CEKALIX S.A.C. - Base de datos del sistema de ventas B2B
--- MySQL 8+ / InnoDB
--- Las cantidades de stock y de venta se expresan en cajas.
+-- MySQL 8+ / InnoDB. Stock y cantidades expresados en cajas.
 -- =====================================================
 CREATE DATABASE IF NOT EXISTS cekalix
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -38,16 +37,15 @@ CREATE TABLE IF NOT EXISTS producto (
   grosor VARCHAR(50),
   color VARCHAR(50),
   precio DECIMAL(10,2) NOT NULL,
-  unidades_por_caja INT NOT NULL DEFAULT 1,
+  unidades_por_caja INT NOT NULL DEFAULT 0,
   stock_fisico INT NOT NULL DEFAULT 0,
   stock_reservado INT NOT NULL DEFAULT 0,
-  CONSTRAINT chk_producto_unidades_caja CHECK (unidades_por_caja > 0),
+  CONSTRAINT chk_producto_unidades_caja CHECK (unidades_por_caja >= 0),
   CONSTRAINT chk_producto_stock CHECK (
     stock_fisico >= 0 AND stock_reservado >= 0 AND stock_reservado <= stock_fisico
   )
 ) ENGINE=InnoDB;
 
--- Se conservan estas tablas por compatibilidad con el esquema existente.
 CREATE TABLE IF NOT EXISTS cotizacion (
   id_cotizacion INT AUTO_INCREMENT PRIMARY KEY,
   id_cliente INT NOT NULL,
