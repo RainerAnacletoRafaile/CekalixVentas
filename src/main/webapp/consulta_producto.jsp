@@ -1,13 +1,18 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="java.util.List" %>
+<%@ page import="modelo.Producto" %>
 <%
     if (session.getAttribute("usuario") == null) {
         response.sendRedirect("login.jsp");
         return;
     }
+    if (request.getAttribute("productos") == null) {
+        response.sendRedirect("Proceso_Producto");
+        return;
+    }
+    List<Producto> productos = (List<Producto>) request.getAttribute("productos");
+    String nombre = request.getParameter("nombre");
 %>
-<%@ page import="java.sql.ResultSet" %>
-<%@ page import="datos.Mantenimiento_Producto" %>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -18,7 +23,6 @@
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-
 <nav class="navbar navbar-dark navbar-cekalix px-3">
     <a class="navbar-brand fw-bold text-white" href="inicio.jsp">CEKALIX S.A.C.</a>
     <div>
@@ -28,20 +32,18 @@
 </nav>
 
 <div class="container py-4">
-
     <h4 class="mb-3">Consulta de productos</h4>
 
-    <!-- Buscador por nombre -->
-    <form action="consulta_producto.jsp" method="get" class="mb-4">
+    <form action="Proceso_Producto" method="get" class="mb-4">
         <div class="input-group">
             <input type="text" name="nombre" class="form-control"
-                   placeholder="Buscar producto por nombre">
+                   placeholder="Buscar producto por nombre"
+                   value="<%= nombre == null ? "" : nombre %>">
             <button type="submit" class="btn btn-cekalix">Buscar</button>
-            <a href="consulta_producto.jsp" class="btn btn-outline-secondary">Ver todos</a>
+            <a href="Proceso_Producto" class="btn btn-outline-secondary">Ver todos</a>
         </div>
     </form>
 
-    <!-- Tabla -->
     <div class="card shadow">
         <div class="table-responsive">
             <table class="table table-striped table-hover align-middle mb-0 tabla-cekalix">
@@ -54,49 +56,32 @@
                     </tr>
                 </thead>
                 <tbody>
-
-                <%
-                    Mantenimiento_Producto mantenimiento =
-                        new Mantenimiento_Producto();
-
-                    String nombre = request.getParameter("nombre");
-
-                    ResultSet resultado;
-
-                    if (nombre == null || nombre.isEmpty()) {
-                        resultado = mantenimiento.consulta(
-                            "SELECT * FROM producto"
-                        );
-                    } else {
-                        resultado = mantenimiento.busqueda(nombre);
-                    }
-
-                    try {
-                        boolean hayProductos = false;
-
-                        while (resultado != null && resultado.next()) {
-                            hayProductos = true;
-                            int stock = resultado.getInt("stock");
-
-                            String color = "success";
-                            if (stock <= 20) {
-                                color = "danger";
-                            } else if (stock <= 50) {
-                                color = "warning text-dark";
-                            }
+                <% if (productos != null && !productos.isEmpty()) {
+                    for (Producto producto : productos) {
+                        int stock = producto.getStock();
+                        String color = stock <= 20 ? "danger"
+                            : stock <= 50 ? "warning text-dark" : "success";
                 %>
-
                     <tr>
-                        <td><%= resultado.getInt("id_producto") %></td>
-                        <td><%= resultado.getString("nombre") %></td>
-                        <td class="text-end">S/ <%= resultado.getBigDecimal("precio") %></td>
+                        <td><%= producto.getId_producto() %></td>
+                        <td><%= producto.getNombre() %></td>
+                        <td class="text-end">S/ <%= producto.getPrecio() %></td>
                         <td class="text-center">
                             <span class="badge bg-<%= color %>"><%= stock %></span>
                         </td>
                     </tr>
-
-                <%
-                        }
-
-                        if (!hayProductos) {
-                %>
+                <%  }
+                   } else { %>
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No se encontraron productos.
+                        </td>
+                    </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
