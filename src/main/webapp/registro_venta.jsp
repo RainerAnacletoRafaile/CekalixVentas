@@ -30,7 +30,7 @@
 
 <div class="container py-4">
     <h4 class="mb-2">Registro de orden de venta B2B</h4>
-    <p class="text-muted">Las cantidades se ingresan en cajas. La orden se registra como Pendiente.</p>
+    <p class="text-muted">Las cantidades se ingresan en cajas. La orden se registra inicialmente como Pendiente.</p>
 
     <% if (request.getParameter("agregado") != null) { %>
         <div class="alert alert-success py-2">SKU agregado a la orden.</div>
@@ -38,6 +38,8 @@
         <div class="alert alert-warning py-2">No hay suficientes cajas disponibles para esa cantidad.</div>
     <% } else if (request.getParameter("producto") != null) { %>
         <div class="alert alert-danger py-2">No se encontró un producto con ese SKU.</div>
+    <% } else if (request.getParameter("cliente") != null) { %>
+        <div class="alert alert-danger py-2">El RUC o la razón social no coinciden con un cliente registrado.</div>
     <% } else if (request.getParameter("error") != null) { %>
         <div class="alert alert-danger py-2">No se pudo completar la operación. Verifica los datos ingresados.</div>
     <% } %>
@@ -51,7 +53,7 @@
         <div class="col-12 col-lg-4">
             <div class="card shadow">
                 <div class="card-body p-4">
-                    <h5 class="mb-3">Agregar SKU</h5>
+                    <h5 class="mb-3">Agregar producto por SKU</h5>
                     <form action="Proceso_Venta" method="post">
                         <input type="hidden" name="accion" value="agregar">
                         <div class="mb-3">
@@ -130,14 +132,19 @@
                     </div>
 
                     <hr class="my-4">
-                    <h5 class="mb-3">Datos del cliente empresarial</h5>
+                    <h5 class="mb-3">Cliente empresarial</h5>
                     <form action="Proceso_Venta" method="post" class="row g-2 align-items-end">
                         <input type="hidden" name="accion" value="registrar">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold">ID del cliente</label>
-                            <input type="number" name="id_cliente" class="form-control" min="1" required>
+                            <label class="form-label fw-semibold">RUC</label>
+                            <input type="text" name="ruc" class="form-control" maxlength="11"
+                                   pattern="[0-9]{11}" inputmode="numeric" required>
                         </div>
                         <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">Razón social</label>
+                            <input type="text" name="razon_social" class="form-control" maxlength="100" required>
+                        </div>
+                        <div class="col-12">
                             <button type="submit" class="btn btn-cekalix w-100">Registrar orden pendiente</button>
                         </div>
                     </form>
