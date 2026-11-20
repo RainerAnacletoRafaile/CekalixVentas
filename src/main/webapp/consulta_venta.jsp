@@ -59,7 +59,7 @@
                 <tbody>
 
                 <%
-                    ArrayList<Venta> ventas =
+                    List<Venta> ventas =
                         (List<Venta>) request.getAttribute("ventas");
 
                     if (ventas != null && !ventas.isEmpty()) {
