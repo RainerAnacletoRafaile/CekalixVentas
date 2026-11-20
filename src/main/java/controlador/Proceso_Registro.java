@@ -38,7 +38,6 @@ public class Proceso_Registro extends HttpServlet {
 
         Mantenimiento_Usuario dao = new Mantenimiento_Usuario();
         boolean registrado = dao.registro(u);
-        dao.cerrar();
 
         response.sendRedirect(registrado ? "registro.jsp?correcto=1" : "registro.jsp?error=1");
     }
