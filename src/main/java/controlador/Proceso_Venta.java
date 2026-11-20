@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
+import datos.Mantenimiento_Cliente;
 import datos.Mantenimiento_Producto;
 import datos.Mantenimiento_Venta;
 import jakarta.servlet.ServletException;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import modelo.CarritoVenta;
+import modelo.Cliente;
 import modelo.Producto;
 import modelo.Venta;
 
@@ -47,7 +49,6 @@ public class Proceso_Venta extends HttpServlet {
             response.sendRedirect("registro_venta.jsp?error=1");
             return;
         }
-
         if (sku == null || sku.isBlank() || cantidad <= 0) {
             response.sendRedirect("registro_venta.jsp?error=1");
             return;
@@ -90,22 +91,28 @@ public class Proceso_Venta extends HttpServlet {
             return;
         }
 
-        int idCliente;
-        try {
-            idCliente = Integer.parseInt(request.getParameter("id_cliente"));
-        } catch (NumberFormatException e) {
-            response.sendRedirect("registro_venta.jsp?error=1");
+        String ruc = request.getParameter("ruc");
+        String razonSocial = request.getParameter("razon_social");
+        if (ruc == null || !ruc.matches("\\d{11}") ||
+                razonSocial == null || razonSocial.isBlank()) {
+            response.sendRedirect("registro_venta.jsp?cliente=1");
+            return;
+        }
+
+        Cliente cliente = new Mantenimiento_Cliente().buscarPorRuc(ruc);
+        if (cliente == null || !cliente.getRazon_social().equalsIgnoreCase(razonSocial.trim())) {
+            response.sendRedirect("registro_venta.jsp?cliente=1");
             return;
         }
 
         Integer idUsuario = (Integer) sesion.getAttribute("idUsuario");
-        if (idCliente <= 0 || idUsuario == null || idUsuario <= 0) {
+        if (idUsuario == null || idUsuario <= 0) {
             response.sendRedirect("registro_venta.jsp?error=1");
             return;
         }
 
         Venta venta = new Venta();
-        venta.setId_cliente(idCliente);
+        venta.setId_cliente(cliente.getId_cliente());
         venta.setId_usuario(idUsuario);
         venta.setFecha(LocalDate.now());
 
@@ -127,11 +134,8 @@ public class Proceso_Venta extends HttpServlet {
             response.sendRedirect("Proceso_Venta?error=1");
             return;
         }
-
         boolean confirmada = new Mantenimiento_Venta().confirmar(idVenta);
-        response.sendRedirect(confirmada
-            ? "Proceso_Venta?confirmada=1"
-            : "Proceso_Venta?stock=1");
+        response.sendRedirect(confirmada ? "Proceso_Venta?confirmada=1" : "Proceso_Venta?stock=1");
     }
 
     @Override
@@ -139,7 +143,6 @@ public class Proceso_Venta extends HttpServlet {
             throws ServletException, IOException {
         HttpSession sesion = request.getSession(false);
         if (!autenticado(sesion, response)) return;
-
         List<Venta> ventas = new Mantenimiento_Venta().listar();
         request.setAttribute("ventas", ventas);
         request.getRequestDispatcher("consulta_venta.jsp").forward(request, response);
