@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS venta (
   fecha DATE NOT NULL,
   total DECIMAL(10,2) NOT NULL,
   estado VARCHAR(30) NOT NULL DEFAULT 'Pendiente',
+  motivo_anulacion TEXT NULL,
   CONSTRAINT fk_venta_cliente FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
   CONSTRAINT fk_venta_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
   CONSTRAINT fk_venta_cotizacion FOREIGN KEY (id_cotizacion) REFERENCES cotizacion(id_cotizacion)
