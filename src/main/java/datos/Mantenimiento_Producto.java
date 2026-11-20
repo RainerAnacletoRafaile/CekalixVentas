@@ -19,9 +19,21 @@ public class Mantenimiento_Producto {
         return ejecutarConsulta(COLUMNAS + "ORDER BY nombre", null);
     }
 
-    public List<Producto> buscarPorNombre(String nombre) {
-        return ejecutarConsulta(COLUMNAS + "WHERE nombre LIKE ? ORDER BY nombre",
-            "%" + nombre.trim() + "%");
+    public List<Producto> buscarPorNombre(String busqueda) {
+        String sql = COLUMNAS + "WHERE nombre LIKE ? OR sku LIKE ? ORDER BY nombre";
+        List<Producto> productos = new ArrayList<>();
+        try (Connection cn = ConexionBD.obtenerConexion();
+             PreparedStatement pst = cn.prepareStatement(sql)) {
+            String parametro = "%" + busqueda.trim() + "%";
+            pst.setString(1, parametro);
+            pst.setString(2, parametro);
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) productos.add(mapearProducto(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("No se pudieron consultar los productos: " + e.getMessage());
+        }
+        return productos;
     }
 
     public Producto buscarPorSku(String sku) {
@@ -66,16 +78,10 @@ public class Mantenimiento_Producto {
 
     private Producto mapearProducto(ResultSet rs) throws SQLException {
         return new Producto(
-            rs.getInt("id_producto"),
-            rs.getString("sku"),
-            rs.getString("nombre"),
-            rs.getString("medida"),
-            rs.getString("grosor"),
-            rs.getString("color"),
-            rs.getBigDecimal("precio"),
-            rs.getInt("unidades_por_caja"),
-            rs.getInt("stock_fisico"),
-            rs.getInt("stock_reservado")
+            rs.getInt("id_producto"), rs.getString("sku"), rs.getString("nombre"),
+            rs.getString("medida"), rs.getString("grosor"), rs.getString("color"),
+            rs.getBigDecimal("precio"), rs.getInt("unidades_por_caja"),
+            rs.getInt("stock_fisico"), rs.getInt("stock_reservado")
         );
     }
 }
