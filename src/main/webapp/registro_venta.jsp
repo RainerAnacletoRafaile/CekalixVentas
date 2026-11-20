@@ -5,9 +5,9 @@
         return;
     }
 %>
-<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
 <%@ page import="modelo.Producto" %>
-<%@ page import="datos.Mantenimiento_Venta" %>
+<%@ page import="modelo.CarritoVenta" %>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -42,10 +42,10 @@
     <% } %>
 
     <%
-        Mantenimiento_Venta carrito =
-            (Mantenimiento_Venta) session.getAttribute("carrito");
+        CarritoVenta carrito =
+            (CarritoVenta) session.getAttribute("carrito");
 
-        boolean hayProductos = carrito != null && !carrito.getProductos().isEmpty();
+        boolean hayProductos = carrito != null && !carrito.estaVacio();
     %>
 
     <div class="row g-4">
@@ -88,8 +88,8 @@
 
                     <% if (hayProductos) {
 
-                        ArrayList<Producto> productos = carrito.getProductos();
-                        ArrayList<Integer> cantidades = carrito.getCantidades();
+                        List<Producto> productos = carrito.getProductos();
+                        List<Integer> cantidades = carrito.getCantidades();
                     %>
 
                     <div class="table-responsive">
@@ -129,16 +129,16 @@
                     <div class="ms-auto" style="max-width: 300px;">
                         <div class="d-flex justify-content-between">
                             <span>Subtotal</span>
-                            <span>S/ <%= String.format("%.2f", carrito.getSubtotal()) %></span>
+                            <span>S/ <%= carrito.getSubtotal().toPlainString() %></span>
                         </div>
                         <div class="d-flex justify-content-between">
                             <span>IGV (18 %)</span>
-                            <span>S/ <%= String.format("%.2f", carrito.getIgv()) %></span>
+                            <span>S/ <%= carrito.getIgv().toPlainString() %></span>
                         </div>
                         <hr class="my-2">
                         <div class="d-flex justify-content-between fw-bold fs-5">
                             <span>Total</span>
-                            <span>S/ <%= String.format("%.2f", carrito.getTotal()) %></span>
+                            <span>S/ <%= carrito.getTotal().toPlainString() %></span>
                         </div>
                     </div>
 
