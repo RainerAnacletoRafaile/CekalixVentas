@@ -7,8 +7,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import modelo.CarritoVenta;
 import modelo.Producto;
@@ -105,7 +108,7 @@ public class Mantenimiento_Venta {
                         if (!hayDetalles) throw new SQLException("La orden no contiene productos.");
                     }
                 }
-                actualizarEstado(cn, idVenta, "Pendiente", "Confirmada", null);
+                actualizarEstado(cn, idVenta, "Pendiente", "Confirmada");
                 cn.commit();
                 return true;
             } catch (SQLException e) {
@@ -151,7 +154,7 @@ public class Mantenimiento_Venta {
                         if (!hayDetalles) throw new SQLException("La orden no contiene productos.");
                     }
                 }
-                actualizarEstado(cn, idVenta, "Confirmada", "Despachado", null);
+                actualizarEstado(cn, idVenta, "Confirmada", "Despachado");
                 cn.commit();
                 return true;
             } catch (SQLException e) {
@@ -243,7 +246,7 @@ public class Mantenimiento_Venta {
     }
 
     private void actualizarEstado(Connection cn, int idVenta, String estadoActual,
-                                  String estadoNuevo, String motivo) throws SQLException {
+                                  String estadoNuevo) throws SQLException {
         try (PreparedStatement pst = cn.prepareStatement(
                 "UPDATE venta SET estado = ? WHERE id_venta = ? AND estado = ?")) {
             pst.setString(1, estadoNuevo);
@@ -251,6 +254,44 @@ public class Mantenimiento_Venta {
             pst.setString(3, estadoActual);
             if (pst.executeUpdate() != 1) throw new SQLException("No se pudo actualizar el estado de la orden.");
         }
+    }
+
+    public List<Map<String, Object>> reportePorCaracteristicas(LocalDate desde, LocalDate hasta) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT p.sku, p.medida, p.grosor, p.color, " +
+            "SUM(d.cantidad) AS cajas_vendidas, SUM(d.subtotal) AS monto_total " +
+            "FROM venta v INNER JOIN detalle_venta d ON d.id_venta = v.id_venta " +
+            "INNER JOIN producto p ON p.id_producto = d.id_producto " +
+            "WHERE v.estado = 'Despachado' "
+        );
+        if (desde != null) sql.append("AND v.fecha >= ? ");
+        if (hasta != null) sql.append("AND v.fecha <= ? ");
+        sql.append("GROUP BY p.sku, p.medida, p.grosor, p.color ");
+        sql.append("ORDER BY cajas_vendidas DESC");
+
+        List<Map<String, Object>> reporte = new ArrayList<>();
+        try (Connection cn = ConexionBD.obtenerConexion();
+             PreparedStatement pst = cn.prepareStatement(sql.toString())) {
+            int parametro = 1;
+            if (desde != null) pst.setDate(parametro++, Date.valueOf(desde));
+            if (hasta != null) pst.setDate(parametro, Date.valueOf(hasta));
+
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> fila = new HashMap<>();
+                    fila.put("sku", rs.getString("sku"));
+                    fila.put("medida", rs.getString("medida"));
+                    fila.put("grosor", rs.getString("grosor"));
+                    fila.put("color", rs.getString("color"));
+                    fila.put("cajas_vendidas", rs.getLong("cajas_vendidas"));
+                    fila.put("monto_total", rs.getBigDecimal("monto_total"));
+                    reporte.add(fila);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("No se pudo generar el reporte de ventas: " + e.getMessage());
+        }
+        return reporte;
     }
 
     public List<Venta> listar() {
