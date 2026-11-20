@@ -1,0 +1,15 @@
+# Compilación Java / Eclipse / Tomcat
+/build/
+/bin/
+/target/
+*.class
+
+# Registros
+*.log
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuración local de herramientas
+.metadata/
