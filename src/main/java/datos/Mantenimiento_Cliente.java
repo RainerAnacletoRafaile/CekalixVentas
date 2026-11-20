@@ -58,14 +58,4 @@ public class Mantenimiento_Cliente extends ConexionBD {
         }
     }
 
-    public void cerrar() {
-        try {
-            if (data != null) data.close();
-            if (pst != null) pst.close();
-            if (sen != null) sen.close();
-            if (conn != null) conn.close();
-        } catch (SQLException e) {
-            System.out.println("Error al cerrar conexión: " + e.getMessage());
-        }
-    }
 }
