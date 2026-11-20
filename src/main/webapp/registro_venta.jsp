@@ -23,7 +23,7 @@
 <nav class="navbar navbar-dark navbar-cekalix px-3">
     <a class="navbar-brand fw-bold text-white" href="inicio.jsp">CEKALIX S.A.C.</a>
     <div>
-        <a href="consulta_producto.jsp" class="btn btn-outline-light btn-sm me-2">Ver productos</a>
+        <a href="Proceso_Producto" class="btn btn-outline-light btn-sm me-2">Ver productos</a>
         <a href="Proceso_Venta" class="btn btn-outline-light btn-sm me-2">Ver ventas</a>
         <a href="inicio.jsp" class="btn btn-outline-light btn-sm">Menú principal</a>
     </div>
@@ -64,7 +64,7 @@
                             <label class="form-label fw-semibold">ID del producto</label>
                             <input type="number" name="id_producto" class="form-control" min="1" required>
                             <div class="form-text">
-                                Consulta el ID en <a href="consulta_producto.jsp">Productos</a>.
+                                Consulta el ID en <a href="Proceso_Producto">Productos</a>.
                             </div>
                         </div>
 
