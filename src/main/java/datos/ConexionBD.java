@@ -2,57 +2,30 @@ package datos;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
- * Centraliza la configuración y apertura de conexiones JDBC.
- * Las operaciones SQL y las transacciones pertenecen a cada clase DAO.
+ * Fábrica centralizada de conexiones JDBC para la capa de datos.
+ * Cada DAO administra sus recursos con try-with-resources.
  */
-public class ConexionBD {
+public final class ConexionBD {
 
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL = "jdbc:mysql://localhost:3306/cekalix";
     private static final String USUARIO = "root";
     private static final String CLAVE = "";
 
-    protected Connection conn;
-    protected Statement sen;
-    protected ResultSet data;
+    private ConexionBD() {
+        // Clase utilitaria: no se instancia.
+    }
 
-    protected Connection conexion() throws SQLException {
+    public static Connection obtenerConexion() throws SQLException {
         try {
             Class.forName(DRIVER);
         } catch (ClassNotFoundException e) {
             throw new SQLException("No se encontró el driver JDBC de MySQL.", e);
         }
 
-        conn = DriverManager.getConnection(URL, USUARIO, CLAVE);
-        return conn;
-    }
-
-    public void cerrar() {
-        try {
-            if (data != null) data.close();
-        } catch (SQLException e) {
-            System.err.println("Error al cerrar ResultSet: " + e.getMessage());
-        }
-
-        try {
-            if (sen != null) sen.close();
-        } catch (SQLException e) {
-            System.err.println("Error al cerrar Statement: " + e.getMessage());
-        }
-
-        try {
-            if (conn != null) conn.close();
-        } catch (SQLException e) {
-            System.err.println("Error al cerrar conexión: " + e.getMessage());
-        } finally {
-            data = null;
-            sen = null;
-            conn = null;
-        }
+        return DriverManager.getConnection(URL, USUARIO, CLAVE);
     }
 }
