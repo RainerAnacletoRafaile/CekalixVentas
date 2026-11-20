@@ -59,6 +59,6 @@ public class Producto {
     }
 
     public int getUnidades_disponibles() {
-        return getStock_disponible() * unidades_por_caja;
+        return unidades_por_caja > 0 ? getStock_disponible() * unidades_por_caja : -1;
     }
 }
