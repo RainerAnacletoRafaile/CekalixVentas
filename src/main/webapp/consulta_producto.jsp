@@ -83,7 +83,7 @@
                                 <small class="d-block text-danger">Stock crítico</small>
                             <% } %>
                         </td>
-                        <td class="text-center"><%= producto.getUnidades_disponibles() %></td>
+                        <td class="text-center"><%= producto.getUnidades_disponibles() < 0 ? "Por definir" : producto.getUnidades_disponibles() %></td>
                     </tr>
                 <%  }
                    } else { %>
