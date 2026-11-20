@@ -30,7 +30,7 @@ public class Mantenimiento_Venta {
     public boolean registro(Venta venta, CarritoVenta carrito) {
         if (venta == null || carrito == null || carrito.estaVacio()) return false;
 
-        try (Connection cn = conexion()) {
+        try (Connection cn = ConexionBD.obtenerConexion()) {
             cn.setAutoCommit(false);
 
             try {
@@ -109,7 +109,7 @@ public class Mantenimiento_Venta {
                      "FROM venta ORDER BY id_venta DESC";
         List<Venta> ventas = new ArrayList<>();
 
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(sql);
              ResultSet rs = pst.executeQuery()) {
 
