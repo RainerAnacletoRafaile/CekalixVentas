@@ -26,6 +26,7 @@
 <nav class="navbar navbar-dark navbar-cekalix px-3">
     <a class="navbar-brand fw-bold text-white" href="inicio.jsp">CEKALIX S.A.C.</a>
     <div>
+        <a href="Proceso_Venta?accion=reporte" class="btn btn-outline-light btn-sm me-2">Reporte de ventas</a>
         <a href="registro_venta.jsp" class="btn btn-outline-light btn-sm me-2">Nueva orden</a>
         <a href="inicio.jsp" class="btn btn-outline-light btn-sm">Menú principal</a>
     </div>
