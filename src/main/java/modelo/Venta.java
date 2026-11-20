@@ -13,6 +13,7 @@ public class Venta {
     private LocalDate fecha;
     private BigDecimal total;
     private String estado;
+    private String motivo_anulacion;
 
     public Venta() {
     }
@@ -33,4 +34,6 @@ public class Venta {
     public void setTotal(BigDecimal total) { this.total = total; }
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+    public String getMotivo_anulacion() { return motivo_anulacion; }
+    public void setMotivo_anulacion(String motivo_anulacion) { this.motivo_anulacion = motivo_anulacion; }
 }
