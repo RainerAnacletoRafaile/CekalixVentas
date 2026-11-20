@@ -33,7 +33,11 @@ public class Proceso_Venta extends HttpServlet {
         } else if ("registrar".equals(accion)) {
             registrarVenta(request, response, sesion);
         } else if ("confirmar".equals(accion)) {
-            confirmarVenta(request, response);
+            procesarEstado(request, response, "confirmar");
+        } else if ("despachar".equals(accion)) {
+            procesarEstado(request, response, "despachar");
+        } else if ("anular".equals(accion)) {
+            anularVenta(request, response);
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Acción no válida.");
         }
@@ -125,7 +129,28 @@ public class Proceso_Venta extends HttpServlet {
         }
     }
 
-    private void confirmarVenta(HttpServletRequest request, HttpServletResponse response)
+    private void procesarEstado(HttpServletRequest request, HttpServletResponse response,
+                                String accion) throws IOException {
+        int idVenta;
+        try {
+            idVenta = Integer.parseInt(request.getParameter("id_venta"));
+        } catch (NumberFormatException e) {
+            response.sendRedirect("Proceso_Venta?error=1");
+            return;
+        }
+
+        Mantenimiento_Venta mantenimiento = new Mantenimiento_Venta();
+        boolean resultado = "confirmar".equals(accion)
+            ? mantenimiento.confirmar(idVenta)
+            : mantenimiento.despachar(idVenta);
+
+        String parametro = "confirmar".equals(accion) ? "confirmada" : "despachada";
+        response.sendRedirect(resultado
+            ? "Proceso_Venta?" + parametro + "=1"
+            : "Proceso_Venta?stock=1");
+    }
+
+    private void anularVenta(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         int idVenta;
         try {
@@ -134,8 +159,12 @@ public class Proceso_Venta extends HttpServlet {
             response.sendRedirect("Proceso_Venta?error=1");
             return;
         }
-        boolean confirmada = new Mantenimiento_Venta().confirmar(idVenta);
-        response.sendRedirect(confirmada ? "Proceso_Venta?confirmada=1" : "Proceso_Venta?stock=1");
+
+        String motivo = request.getParameter("motivo");
+        boolean anulada = new Mantenimiento_Venta().anular(idVenta, motivo);
+        response.sendRedirect(anulada
+            ? "Proceso_Venta?anulada=1"
+            : "Proceso_Venta?anulacion=error");
     }
 
     @Override
