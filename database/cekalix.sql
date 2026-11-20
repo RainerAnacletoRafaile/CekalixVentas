@@ -1,6 +1,6 @@
 -- =====================================================
--- CEKALIX S.A.C. - Base de datos del sistema de ventas
--- MySQL 8+ / InnoDB
+-- CEKALIX S.A.C. - Base de datos del sistema de ventas B2B
+-- MySQL 8+ / InnoDB. Stock y cantidades expresados en cajas.
 -- =====================================================
 CREATE DATABASE IF NOT EXISTS cekalix
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -31,12 +31,19 @@ CREATE TABLE IF NOT EXISTS cliente (
 
 CREATE TABLE IF NOT EXISTS producto (
   id_producto INT AUTO_INCREMENT PRIMARY KEY,
+  sku VARCHAR(40) NOT NULL UNIQUE,
   nombre VARCHAR(100) NOT NULL,
   medida VARCHAR(50),
   grosor VARCHAR(50),
   color VARCHAR(50),
   precio DECIMAL(10,2) NOT NULL,
-  stock INT NOT NULL DEFAULT 0
+  unidades_por_caja INT NOT NULL DEFAULT 0,
+  stock_fisico INT NOT NULL DEFAULT 0,
+  stock_reservado INT NOT NULL DEFAULT 0,
+  CONSTRAINT chk_producto_unidades_caja CHECK (unidades_por_caja >= 0),
+  CONSTRAINT chk_producto_stock CHECK (
+    stock_fisico >= 0 AND stock_reservado >= 0 AND stock_reservado <= stock_fisico
+  )
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS cotizacion (
@@ -70,7 +77,8 @@ CREATE TABLE IF NOT EXISTS venta (
   id_cotizacion INT NULL,
   fecha DATE NOT NULL,
   total DECIMAL(10,2) NOT NULL,
-  estado VARCHAR(30) NOT NULL DEFAULT 'Registrada',
+  estado VARCHAR(30) NOT NULL DEFAULT 'Pendiente',
+  motivo_anulacion TEXT NULL,
   CONSTRAINT fk_venta_cliente FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
   CONSTRAINT fk_venta_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
   CONSTRAINT fk_venta_cotizacion FOREIGN KEY (id_cotizacion) REFERENCES cotizacion(id_cotizacion)
@@ -89,11 +97,9 @@ CREATE TABLE IF NOT EXISTS detalle_venta (
     REFERENCES producto(id_producto)
 ) ENGINE=InnoDB;
 
--- Datos iniciales idempotentes
 INSERT IGNORE INTO rol (id_rol, nombre) VALUES
   (1, 'Administrador'), (2, 'Vendedor');
 
--- Acceso inicial: admin / admin123. Cambiar la clave luego del primer ingreso.
 INSERT INTO usuario (id_rol, nombre, usuario, contrasena, estado)
 SELECT 1, 'Administrador', 'admin', 'admin123', TRUE
 WHERE NOT EXISTS (SELECT 1 FROM usuario WHERE usuario = 'admin');

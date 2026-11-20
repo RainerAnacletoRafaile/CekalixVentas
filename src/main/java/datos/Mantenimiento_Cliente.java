@@ -1,71 +1,91 @@
 package datos;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import modelo.Cliente;
 
-public class Mantenimiento_Cliente extends Libreria {
-    private PreparedStatement pst;
+public class Mantenimiento_Cliente {
 
-    public boolean registro(Cliente c) {
-        String sql = "INSERT INTO cliente (razon_social, ruc, telefono, direccion) VALUES (?, ?, ?, ?)";
-        try {
-            pst = conexion().prepareStatement(sql);
-            pst.setString(1, c.getRazon_social());
-            pst.setString(2, c.getRuc());
-            pst.setString(3, c.getTelefono());
-            pst.setString(4, c.getDireccion());
+    public boolean registro(Cliente cliente) {
+        String sql = "INSERT INTO cliente (razon_social, ruc, telefono, direccion) " +
+                     "VALUES (?, ?, ?, ?)";
+
+        try (Connection cn = ConexionBD.obtenerConexion();
+             PreparedStatement pst = cn.prepareStatement(sql)) {
+            pst.setString(1, cliente.getRazon_social());
+            pst.setString(2, cliente.getRuc());
+            pst.setString(3, cliente.getTelefono());
+            pst.setString(4, cliente.getDireccion());
             return pst.executeUpdate() == 1;
         } catch (SQLException e) {
-            System.out.println("Error al registrar cliente: " + e.getMessage());
+            System.err.println("No se pudo registrar el cliente: " + e.getMessage());
             return false;
         }
     }
 
-    public ResultSet consulta(String sql) {
-        try {
-            sen = conexion().createStatement();
-            data = sen.executeQuery(sql);
+    public List<Cliente> listar() {
+        String sql = "SELECT id_cliente, razon_social, ruc, telefono, direccion " +
+                     "FROM cliente ORDER BY razon_social";
+        List<Cliente> clientes = new ArrayList<>();
+
+        try (Connection cn = ConexionBD.obtenerConexion();
+             PreparedStatement pst = cn.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+            while (rs.next()) clientes.add(mapearCliente(rs));
         } catch (SQLException e) {
-            System.out.println("Error en la consulta: " + e.getMessage());
+            System.err.println("No se pudieron consultar los clientes: " + e.getMessage());
         }
-        return data;
+
+        return clientes;
     }
 
-    public ResultSet busqueda(String ruc) {
-        try {
-            pst = conexion().prepareStatement("SELECT * FROM cliente WHERE ruc = ?");
+    public Cliente buscarPorRuc(String ruc) {
+        String sql = "SELECT id_cliente, razon_social, ruc, telefono, direccion " +
+                     "FROM cliente WHERE ruc = ?";
+
+        try (Connection cn = ConexionBD.obtenerConexion();
+             PreparedStatement pst = cn.prepareStatement(sql)) {
             pst.setString(1, ruc);
-            data = pst.executeQuery();
+
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next() ? mapearCliente(rs) : null;
+            }
         } catch (SQLException e) {
-            System.out.println("Error al buscar cliente: " + e.getMessage());
+            System.err.println("No se pudo buscar el cliente: " + e.getMessage());
+            return null;
         }
-        return data;
     }
 
-    public boolean actualizar(Cliente c) {
-        String sql = "UPDATE cliente SET razon_social=?, ruc=?, telefono=?, direccion=? WHERE id_cliente=?";
-        try {
-            pst = conexion().prepareStatement(sql);
-            pst.setString(1, c.getRazon_social());
-            pst.setString(2, c.getRuc());
-            pst.setString(3, c.getTelefono());
-            pst.setString(4, c.getDireccion());
-            pst.setInt(5, c.getId_cliente());
+    public boolean actualizar(Cliente cliente) {
+        String sql = "UPDATE cliente SET razon_social = ?, ruc = ?, telefono = ?, " +
+                     "direccion = ? WHERE id_cliente = ?";
+
+        try (Connection cn = ConexionBD.obtenerConexion();
+             PreparedStatement pst = cn.prepareStatement(sql)) {
+            pst.setString(1, cliente.getRazon_social());
+            pst.setString(2, cliente.getRuc());
+            pst.setString(3, cliente.getTelefono());
+            pst.setString(4, cliente.getDireccion());
+            pst.setInt(5, cliente.getId_cliente());
             return pst.executeUpdate() == 1;
         } catch (SQLException e) {
-            System.out.println("Error al actualizar cliente: " + e.getMessage());
+            System.err.println("No se pudo actualizar el cliente: " + e.getMessage());
             return false;
         }
     }
 
-    public void cerrar() {
-        try {
-            if (data != null) data.close();
-            if (pst != null) pst.close();
-            if (sen != null) sen.close();
-            if (conn != null) conn.close();
-        } catch (SQLException e) {
-            System.out.println("Error al cerrar conexión: " + e.getMessage());
-        }
+    private Cliente mapearCliente(ResultSet rs) throws SQLException {
+        Cliente cliente = new Cliente();
+        cliente.setId_cliente(rs.getInt("id_cliente"));
+        cliente.setRazon_social(rs.getString("razon_social"));
+        cliente.setRuc(rs.getString("ruc"));
+        cliente.setTelefono(rs.getString("telefono"));
+        cliente.setDireccion(rs.getString("direccion"));
+        return cliente;
     }
 }
