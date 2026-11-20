@@ -22,16 +22,16 @@ public class Proceso_Venta extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         HttpSession sesion = request.getSession(false);
         if (!autenticado(sesion, response)) return;
 
         String accion = request.getParameter("accion");
-
         if ("agregar".equals(accion)) {
             agregarProducto(request, response, sesion);
         } else if ("registrar".equals(accion)) {
             registrarVenta(request, response, sesion);
+        } else if ("confirmar".equals(accion)) {
+            confirmarVenta(request, response);
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Acción no válida.");
         }
@@ -39,27 +39,23 @@ public class Proceso_Venta extends HttpServlet {
 
     private void agregarProducto(HttpServletRequest request, HttpServletResponse response,
                                  HttpSession sesion) throws IOException {
-        int idProducto;
+        String sku = request.getParameter("sku");
         int cantidad;
-
         try {
-            idProducto = Integer.parseInt(request.getParameter("id_producto"));
             cantidad = Integer.parseInt(request.getParameter("cantidad"));
         } catch (NumberFormatException e) {
             response.sendRedirect("registro_venta.jsp?error=1");
             return;
         }
 
-        if (idProducto <= 0 || cantidad <= 0) {
+        if (sku == null || sku.isBlank() || cantidad <= 0) {
             response.sendRedirect("registro_venta.jsp?error=1");
             return;
         }
 
-        Mantenimiento_Producto daoProducto = new Mantenimiento_Producto();
-        Producto producto = daoProducto.buscarPorId(idProducto);
-
+        Producto producto = new Mantenimiento_Producto().buscarPorSku(sku.trim());
         if (producto == null) {
-            response.sendRedirect("registro_venta.jsp?error=1");
+            response.sendRedirect("registro_venta.jsp?producto=1");
             return;
         }
 
@@ -69,15 +65,14 @@ public class Proceso_Venta extends HttpServlet {
         int cantidadEnCarrito = 0;
         List<Producto> productos = carrito.getProductos();
         List<Integer> cantidades = carrito.getCantidades();
-
         for (int i = 0; i < productos.size(); i++) {
-            if (productos.get(i).getId_producto() == idProducto) {
+            if (productos.get(i).getId_producto() == producto.getId_producto()) {
                 cantidadEnCarrito = cantidades.get(i);
                 break;
             }
         }
 
-        if (cantidad + cantidadEnCarrito > producto.getStock()) {
+        if (cantidad + cantidadEnCarrito > producto.getStock_disponible()) {
             response.sendRedirect("registro_venta.jsp?stock=1");
             return;
         }
@@ -123,10 +118,25 @@ public class Proceso_Venta extends HttpServlet {
         }
     }
 
+    private void confirmarVenta(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        int idVenta;
+        try {
+            idVenta = Integer.parseInt(request.getParameter("id_venta"));
+        } catch (NumberFormatException e) {
+            response.sendRedirect("Proceso_Venta?error=1");
+            return;
+        }
+
+        boolean confirmada = new Mantenimiento_Venta().confirmar(idVenta);
+        response.sendRedirect(confirmada
+            ? "Proceso_Venta?confirmada=1"
+            : "Proceso_Venta?stock=1");
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         HttpSession sesion = request.getSession(false);
         if (!autenticado(sesion, response)) return;
 
