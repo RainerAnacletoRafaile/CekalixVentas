@@ -38,7 +38,9 @@ Se mantienen los nombres y la organización que ya utiliza CEKALIX Ventas. El al
   - Desde 50 cajas: 12 % de descuento.
 - Registro inicial de la orden como Pendiente.
 - Confirmación transaccional y reserva de cajas sin modificar el stock físico.
-- Consulta del historial de órdenes y sus estados.
+- Despacho de órdenes confirmadas, descontando stock físico y reservado.
+- Anulación de órdenes Pendientes o Confirmadas con motivo obligatorio y liberación de reservas.
+- Consulta del historial y reporte por SKU, medida, grosor y color, filtrado por fechas y limitado a órdenes Despachadas.
 
 ## Base de datos
 
@@ -56,7 +58,7 @@ Realiza un backup y ejecuta una sola vez `database/actualizar_cekalix_ventas_b2b
 
 Los SKU generados tienen formato `SKU-000001`; reemplázalos por los SKU comerciales reales. El valor `unidades_por_caja` queda en cero hasta cargar la equivalencia real. No se inventa esa conversión: mientras no esté definida, la consulta muestra "Por definir".
 
-Las cantidades de venta y existencias se expresan en cajas. La disponibilidad es `stock_fisico - stock_reservado`.
+Las cantidades de venta y existencias se expresan en cajas. La disponibilidad es `stock_fisico - stock_reservado`. La generación de la Guía de Salida en PDF todavía requiere implementar el documento descargable; el flujo de despacho actual actualiza los estados y existencias.
 
 ## Responsabilidades del código
 
