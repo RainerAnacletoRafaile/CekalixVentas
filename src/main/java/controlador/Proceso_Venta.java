@@ -39,6 +39,7 @@ public class Proceso_Venta extends HttpServlet {
         } else if ("despachar".equals(accion)) {
             procesarEstado(request, response, "despachar");
         } else if ("anular".equals(accion)) {
+            if (!esAdministrador(sesion, response)) return;
             anularVenta(request, response);
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Acción no válida.");
@@ -184,7 +185,7 @@ public class Proceso_Venta extends HttpServlet {
                 if (valorDesde != null && !valorDesde.isBlank()) desde = LocalDate.parse(valorDesde);
                 if (valorHasta != null && !valorHasta.isBlank()) hasta = LocalDate.parse(valorHasta);
                 if (desde != null && hasta != null && desde.isAfter(hasta)) {
-                    response.sendRedirect("Proceso_Venta?reporteError=1");
+                    response.sendRedirect("Proceso_Venta?accion=reporte&reporteError=1");
                     return;
                 }
             } catch (DateTimeParseException e) {
@@ -204,6 +205,16 @@ public class Proceso_Venta extends HttpServlet {
         List<Venta> ventas = new Mantenimiento_Venta().listar();
         request.setAttribute("ventas", ventas);
         request.getRequestDispatcher("consulta_venta.jsp").forward(request, response);
+    }
+
+    private boolean esAdministrador(HttpSession sesion, HttpServletResponse response)
+            throws IOException {
+        if (!Integer.valueOf(1).equals(sesion.getAttribute("idRol"))) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                "Solo el administrador puede anular órdenes.");
+            return false;
+        }
+        return true;
     }
 
     private boolean autenticado(HttpSession sesion, HttpServletResponse response)
