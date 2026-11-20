@@ -25,6 +25,7 @@ ALTER TABLE producto
   );
 
 ALTER TABLE venta
-  MODIFY estado VARCHAR(30) NOT NULL DEFAULT 'Pendiente';
+  MODIFY estado VARCHAR(30) NOT NULL DEFAULT 'Pendiente',
+  ADD COLUMN motivo_anulacion TEXT NULL;
 
 UPDATE venta SET estado = 'Confirmada' WHERE estado = 'Registrada';
