@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 import modelo.Usuario;
 
-public class Mantenimiento_Usuario extends ConexionBD {
+public class Mantenimiento_Usuario {
 
     private static final String SQL_REGISTRO =
         "INSERT INTO usuario (id_rol, nombre, usuario, contrasena) VALUES (2, ?, ?, ?)";
