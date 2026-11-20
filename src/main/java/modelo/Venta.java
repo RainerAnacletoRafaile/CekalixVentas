@@ -8,21 +8,13 @@ public class Venta {
     private int id_venta;
     private int id_cliente;
     private int id_usuario;
+    private String razon_social;
+    private String ruc;
     private LocalDate fecha;
     private BigDecimal total;
     private String estado;
 
     public Venta() {
-    }
-
-    public Venta(int id_venta, int id_cliente, int id_usuario,
-                 LocalDate fecha, BigDecimal total, String estado) {
-        this.id_venta = id_venta;
-        this.id_cliente = id_cliente;
-        this.id_usuario = id_usuario;
-        this.fecha = fecha;
-        this.total = total;
-        this.estado = estado;
     }
 
     public int getId_venta() { return id_venta; }
@@ -31,6 +23,10 @@ public class Venta {
     public void setId_cliente(int id_cliente) { this.id_cliente = id_cliente; }
     public int getId_usuario() { return id_usuario; }
     public void setId_usuario(int id_usuario) { this.id_usuario = id_usuario; }
+    public String getRazon_social() { return razon_social; }
+    public void setRazon_social(String razon_social) { this.razon_social = razon_social; }
+    public String getRuc() { return ruc; }
+    public void setRuc(String ruc) { this.ruc = ruc; }
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
     public BigDecimal getTotal() { return total; }
