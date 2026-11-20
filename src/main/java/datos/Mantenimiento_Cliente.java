@@ -15,7 +15,7 @@ public class Mantenimiento_Cliente {
         String sql = "INSERT INTO cliente (razon_social, ruc, telefono, direccion) " +
                      "VALUES (?, ?, ?, ?)";
 
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(sql)) {
             pst.setString(1, cliente.getRazon_social());
             pst.setString(2, cliente.getRuc());
@@ -33,7 +33,7 @@ public class Mantenimiento_Cliente {
                      "FROM cliente ORDER BY razon_social";
         List<Cliente> clientes = new ArrayList<>();
 
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(sql);
              ResultSet rs = pst.executeQuery()) {
             while (rs.next()) clientes.add(mapearCliente(rs));
@@ -48,7 +48,7 @@ public class Mantenimiento_Cliente {
         String sql = "SELECT id_cliente, razon_social, ruc, telefono, direccion " +
                      "FROM cliente WHERE ruc = ?";
 
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(sql)) {
             pst.setString(1, ruc);
 
@@ -65,7 +65,7 @@ public class Mantenimiento_Cliente {
         String sql = "UPDATE cliente SET razon_social = ?, ruc = ?, telefono = ?, " +
                      "direccion = ? WHERE id_cliente = ?";
 
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(sql)) {
             pst.setString(1, cliente.getRazon_social());
             pst.setString(2, cliente.getRuc());
