@@ -3,7 +3,7 @@ package datos;
 import java.sql.*;
 import modelo.Usuario;
 
-public class Mantenimiento_Usuario extends Libreria {
+public class Mantenimiento_Usuario extends ConexionBD {
     private PreparedStatement pst;
 
     // Los vendedores se crean con rol 2; el administrador inicial viene del SQL.
