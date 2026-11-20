@@ -27,7 +27,7 @@ public class Mantenimiento_Producto {
         String sql = "SELECT id_producto, nombre, precio, stock " +
                      "FROM producto WHERE id_producto = ?";
 
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(sql)) {
             pst.setInt(1, idProducto);
 
@@ -43,7 +43,7 @@ public class Mantenimiento_Producto {
     private List<Producto> ejecutarConsulta(String sql, String parametro) {
         List<Producto> productos = new ArrayList<>();
 
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(sql)) {
             if (parametro != null) pst.setString(1, parametro);
 
