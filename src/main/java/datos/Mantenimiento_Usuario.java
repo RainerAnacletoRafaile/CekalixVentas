@@ -17,7 +17,7 @@ public class Mantenimiento_Usuario {
         "FROM usuario WHERE usuario = ? AND contrasena = ? AND estado = TRUE";
 
     public boolean registro(Usuario usuario) {
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(SQL_REGISTRO)) {
 
             pst.setString(1, usuario.getNombre());
@@ -36,7 +36,7 @@ public class Mantenimiento_Usuario {
      * en una sola consulta y una sola conexión.
      */
     public Usuario autenticar(String nombreUsuario, String contrasena) {
-        try (Connection cn = conexion();
+        try (Connection cn = ConexionBD.obtenerConexion();
              PreparedStatement pst = cn.prepareStatement(SQL_AUTENTICAR)) {
 
             pst.setString(1, nombreUsuario);
