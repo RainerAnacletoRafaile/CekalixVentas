@@ -41,8 +41,14 @@
         <div class="alert alert-success py-2">Orden registrada en estado Pendiente.</div>
     <% } else if (request.getParameter("confirmada") != null) { %>
         <div class="alert alert-success py-2">Orden confirmada y cajas reservadas correctamente.</div>
+    <% } else if (request.getParameter("despachada") != null) { %>
+        <div class="alert alert-success py-2">Despacho registrado y stock físico actualizado.</div>
+    <% } else if (request.getParameter("anulada") != null) { %>
+        <div class="alert alert-success py-2">Orden anulada correctamente.</div>
     <% } else if (request.getParameter("stock") != null) { %>
-        <div class="alert alert-warning py-2">No se pudo confirmar: revisa el stock disponible o el estado de la orden.</div>
+        <div class="alert alert-warning py-2">No se pudo procesar: revisa el stock disponible o el estado de la orden.</div>
+    <% } else if (request.getParameter("anulacion") != null) { %>
+        <div class="alert alert-danger py-2">No se pudo anular. Verifica el motivo y el estado de la orden.</div>
     <% } else if (request.getParameter("error") != null) { %>
         <div class="alert alert-danger py-2">No se pudo procesar la orden.</div>
     <% } %>
@@ -58,7 +64,8 @@
                         <th>Fecha</th>
                         <th class="text-end">Total</th>
                         <th>Estado</th>
-                        <th>Acción</th>
+                        <th>Motivo de anulación</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,7 +75,8 @@
                         for (Venta v : ventas) {
                             String estado = v.getEstado() == null ? "" : v.getEstado();
                             String color = "Pendiente".equalsIgnoreCase(estado) ? "warning text-dark"
-                                : "Confirmada".equalsIgnoreCase(estado) ? "success" : "secondary";
+                                : "Confirmada".equalsIgnoreCase(estado) ? "success"
+                                : "Despachado".equalsIgnoreCase(estado) ? "primary" : "secondary";
                 %>
                     <tr>
                         <td><%= v.getId_venta() %></td>
@@ -77,15 +85,32 @@
                         <td><%= v.getFecha() %></td>
                         <td class="text-end fw-semibold">S/ <%= v.getTotal() %></td>
                         <td><span class="badge bg-<%= color %>"><%= estado %></span></td>
+                        <td><%= v.getMotivo_anulacion() == null ? "—" : v.getMotivo_anulacion() %></td>
                         <td>
                             <% if ("Pendiente".equalsIgnoreCase(estado)) { %>
-                                <form action="Proceso_Venta" method="post" class="m-0">
+                                <form action="Proceso_Venta" method="post" class="mb-2">
                                     <input type="hidden" name="accion" value="confirmar">
                                     <input type="hidden" name="id_venta" value="<%= v.getId_venta() %>">
                                     <button type="submit" class="btn btn-sm btn-cekalix">Confirmar y reservar</button>
                                 </form>
+                            <% } else if ("Confirmada".equalsIgnoreCase(estado)) { %>
+                                <form action="Proceso_Venta" method="post" class="mb-2">
+                                    <input type="hidden" name="accion" value="despachar">
+                                    <input type="hidden" name="id_venta" value="<%= v.getId_venta() %>">
+                                    <button type="submit" class="btn btn-sm btn-primary">Confirmar despacho</button>
+                                </form>
+                            <% } %>
+
+                            <% if ("Pendiente".equalsIgnoreCase(estado) || "Confirmada".equalsIgnoreCase(estado)) { %>
+                                <form action="Proceso_Venta" method="post" class="mt-2">
+                                    <input type="hidden" name="accion" value="anular">
+                                    <input type="hidden" name="id_venta" value="<%= v.getId_venta() %>">
+                                    <input type="text" name="motivo" class="form-control form-control-sm mb-1"
+                                           placeholder="Motivo de anulación" maxlength="500" required>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Anular orden</button>
+                                </form>
                             <% } else { %>
-                                <span class="text-muted">—</span>
+                                <span class="text-muted">Sin acciones</span>
                             <% } %>
                         </td>
                     </tr>
@@ -94,7 +119,7 @@
                     } else {
                 %>
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No existen órdenes registradas.</td>
+                        <td colspan="8" class="text-center text-muted py-4">No existen órdenes registradas.</td>
                     </tr>
                 <% } %>
                 </tbody>
