@@ -86,15 +86,7 @@ public class Mantenimiento_Venta {
         try (Connection cn = ConexionBD.obtenerConexion()) {
             cn.setAutoCommit(false);
             try {
-                try (PreparedStatement estado = cn.prepareStatement(sqlEstado)) {
-                    estado.setInt(1, idVenta);
-                    try (ResultSet rs = estado.executeQuery()) {
-                        if (!rs.next() || !"Pendiente".equalsIgnoreCase(rs.getString("estado"))) {
-                            throw new SQLException("La orden no existe o ya fue procesada.");
-                        }
-                    }
-                }
-
+                validarEstado(cn, idVenta, "Pendiente");
                 try (PreparedStatement detalles = cn.prepareStatement(sqlDetalles);
                      PreparedStatement reservar = cn.prepareStatement(sqlReservar)) {
                     detalles.setInt(1, idVenta);
@@ -113,11 +105,7 @@ public class Mantenimiento_Venta {
                         if (!hayDetalles) throw new SQLException("La orden no contiene productos.");
                     }
                 }
-
-                try (PreparedStatement confirmar = cn.prepareStatement(sqlConfirmar)) {
-                    confirmar.setInt(1, idVenta);
-                    if (confirmar.executeUpdate() != 1) throw new SQLException("No se pudo confirmar la orden.");
-                }
+                actualizarEstado(cn, idVenta, "Pendiente", "Confirmada", null);
                 cn.commit();
                 return true;
             } catch (SQLException e) {
@@ -133,9 +121,141 @@ public class Mantenimiento_Venta {
         }
     }
 
+    public boolean despachar(int idVenta) {
+        String sqlDetalles = "SELECT id_producto, cantidad FROM detalle_venta WHERE id_venta = ?";
+        String sqlDescontar = "UPDATE producto SET stock_fisico = stock_fisico - ?, " +
+            "stock_reservado = stock_reservado - ? " +
+            "WHERE id_producto = ? AND stock_reservado >= ? AND stock_fisico >= ?";
+        try (Connection cn = ConexionBD.obtenerConexion()) {
+            cn.setAutoCommit(false);
+            try {
+                validarEstado(cn, idVenta, "Confirmada");
+                try (PreparedStatement detalles = cn.prepareStatement(sqlDetalles);
+                     PreparedStatement descontar = cn.prepareStatement(sqlDescontar)) {
+                    detalles.setInt(1, idVenta);
+                    try (ResultSet rs = detalles.executeQuery()) {
+                        boolean hayDetalles = false;
+                        while (rs.next()) {
+                            hayDetalles = true;
+                            int cantidad = rs.getInt("cantidad");
+                            int idProducto = rs.getInt("id_producto");
+                            descontar.setInt(1, cantidad);
+                            descontar.setInt(2, cantidad);
+                            descontar.setInt(3, idProducto);
+                            descontar.setInt(4, cantidad);
+                            descontar.setInt(5, cantidad);
+                            if (descontar.executeUpdate() != 1) {
+                                throw new SQLException("No se pudo descontar el stock reservado.");
+                            }
+                        }
+                        if (!hayDetalles) throw new SQLException("La orden no contiene productos.");
+                    }
+                }
+                actualizarEstado(cn, idVenta, "Confirmada", "Despachado", null);
+                cn.commit();
+                return true;
+            } catch (SQLException e) {
+                cn.rollback();
+                System.err.println("No se pudo despachar la orden: " + e.getMessage());
+                return false;
+            } finally {
+                cn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            System.err.println("No se pudo despachar la orden: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean anular(int idVenta, String motivo) {
+        if (motivo == null || motivo.isBlank()) return false;
+        String sqlEstado = "SELECT estado FROM venta WHERE id_venta = ? FOR UPDATE";
+        String sqlDetalles = "SELECT id_producto, cantidad FROM detalle_venta WHERE id_venta = ?";
+        String sqlLiberar = "UPDATE producto SET stock_reservado = stock_reservado - ? " +
+            "WHERE id_producto = ? AND stock_reservado >= ?";
+        try (Connection cn = ConexionBD.obtenerConexion()) {
+            cn.setAutoCommit(false);
+            try {
+                String estado;
+                try (PreparedStatement pst = cn.prepareStatement(sqlEstado)) {
+                    pst.setInt(1, idVenta);
+                    try (ResultSet rs = pst.executeQuery()) {
+                        if (!rs.next()) throw new SQLException("La orden no existe.");
+                        estado = rs.getString("estado");
+                    }
+                }
+                if (!"Pendiente".equalsIgnoreCase(estado) &&
+                    !"Confirmada".equalsIgnoreCase(estado)) {
+                    throw new SQLException("Solo se pueden anular órdenes Pendientes o Confirmadas.");
+                }
+
+                if ("Confirmada".equalsIgnoreCase(estado)) {
+                    try (PreparedStatement detalles = cn.prepareStatement(sqlDetalles);
+                         PreparedStatement liberar = cn.prepareStatement(sqlLiberar)) {
+                        detalles.setInt(1, idVenta);
+                        try (ResultSet rs = detalles.executeQuery()) {
+                            while (rs.next()) {
+                                int cantidad = rs.getInt("cantidad");
+                                liberar.setInt(1, cantidad);
+                                liberar.setInt(2, rs.getInt("id_producto"));
+                                liberar.setInt(3, cantidad);
+                                if (liberar.executeUpdate() != 1) {
+                                    throw new SQLException("No se pudo liberar el stock reservado.");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                try (PreparedStatement pst = cn.prepareStatement(
+                        "UPDATE venta SET estado = 'Anulado', motivo_anulacion = ? " +
+                        "WHERE id_venta = ? AND estado IN ('Pendiente', 'Confirmada')")) {
+                    pst.setString(1, motivo.trim());
+                    pst.setInt(2, idVenta);
+                    if (pst.executeUpdate() != 1) throw new SQLException("No se pudo anular la orden.");
+                }
+                cn.commit();
+                return true;
+            } catch (SQLException e) {
+                cn.rollback();
+                System.err.println("No se pudo anular la orden: " + e.getMessage());
+                return false;
+            } finally {
+                cn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            System.err.println("No se pudo anular la orden: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void validarEstado(Connection cn, int idVenta, String estadoEsperado)
+            throws SQLException {
+        try (PreparedStatement pst = cn.prepareStatement(
+                "SELECT estado FROM venta WHERE id_venta = ? FOR UPDATE")) {
+            pst.setInt(1, idVenta);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (!rs.next() || !estadoEsperado.equalsIgnoreCase(rs.getString("estado"))) {
+                    throw new SQLException("La orden no existe o no está en estado " + estadoEsperado + ".");
+                }
+            }
+        }
+    }
+
+    private void actualizarEstado(Connection cn, int idVenta, String estadoActual,
+                                  String estadoNuevo, String motivo) throws SQLException {
+        try (PreparedStatement pst = cn.prepareStatement(
+                "UPDATE venta SET estado = ? WHERE id_venta = ? AND estado = ?")) {
+            pst.setString(1, estadoNuevo);
+            pst.setInt(2, idVenta);
+            pst.setString(3, estadoActual);
+            if (pst.executeUpdate() != 1) throw new SQLException("No se pudo actualizar el estado de la orden.");
+        }
+    }
+
     public List<Venta> listar() {
         String sql = "SELECT v.id_venta, v.id_cliente, v.id_usuario, c.razon_social, c.ruc, " +
-            "v.fecha, v.total, v.estado FROM venta v " +
+            "v.fecha, v.total, v.estado, v.motivo_anulacion FROM venta v " +
             "INNER JOIN cliente c ON c.id_cliente = v.id_cliente ORDER BY v.id_venta DESC";
         List<Venta> ventas = new ArrayList<>();
         try (Connection cn = ConexionBD.obtenerConexion();
@@ -151,6 +271,7 @@ public class Mantenimiento_Venta {
                 venta.setFecha(rs.getDate("fecha").toLocalDate());
                 venta.setTotal(rs.getBigDecimal("total"));
                 venta.setEstado(rs.getString("estado"));
+                venta.setMotivo_anulacion(rs.getString("motivo_anulacion"));
                 ventas.add(venta);
             }
         } catch (SQLException e) {
