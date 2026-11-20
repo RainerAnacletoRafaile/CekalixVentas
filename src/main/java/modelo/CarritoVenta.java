@@ -7,7 +7,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Carrito temporal de una venta. No contiene conexiones ni lógica JDBC.
+ * Productos y cantidades de una orden de venta en preparación.
+ * Las cantidades representan cajas solicitadas por SKU.
  */
 public class CarritoVenta {
 
@@ -42,7 +43,16 @@ public class CarritoVenta {
         return productos.isEmpty();
     }
 
-    public BigDecimal getSubtotal() {
+    public BigDecimal getPrecioAplicado(int indice) {
+        Producto producto = productos.get(indice);
+        int cantidad = cantidades.get(indice);
+        BigDecimal descuento = obtenerPorcentajeDescuento(cantidad);
+        return producto.getPrecio()
+            .multiply(BigDecimal.ONE.subtract(descuento))
+            .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal getSubtotalBruto() {
         BigDecimal subtotal = BigDecimal.ZERO;
         for (int i = 0; i < productos.size(); i++) {
             subtotal = subtotal.add(
@@ -52,12 +62,27 @@ public class CarritoVenta {
         return subtotal.setScale(2, RoundingMode.HALF_UP);
     }
 
-    public BigDecimal getIgv() {
-        return getSubtotal().multiply(new BigDecimal("0.18"))
-            .setScale(2, RoundingMode.HALF_UP);
+    public BigDecimal getDescuento() {
+        return getSubtotalBruto().subtract(getSubtotal()).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal getSubtotal() {
+        BigDecimal subtotal = BigDecimal.ZERO;
+        for (int i = 0; i < productos.size(); i++) {
+            subtotal = subtotal.add(
+                getPrecioAplicado(i).multiply(BigDecimal.valueOf(cantidades.get(i)))
+            );
+        }
+        return subtotal.setScale(2, RoundingMode.HALF_UP);
     }
 
     public BigDecimal getTotal() {
-        return getSubtotal().add(getIgv()).setScale(2, RoundingMode.HALF_UP);
+        return getSubtotal();
+    }
+
+    public static BigDecimal obtenerPorcentajeDescuento(int cajas) {
+        if (cajas >= 50) return new BigDecimal("0.12");
+        if (cajas >= 10) return new BigDecimal("0.05");
+        return BigDecimal.ZERO;
     }
 }
