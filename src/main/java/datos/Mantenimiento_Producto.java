@@ -2,7 +2,7 @@ package datos;
 
 import java.sql.*;
 
-public class Mantenimiento_Producto extends Libreria {
+public class Mantenimiento_Producto extends ConexionBD {
 
     // Consultar productos
     public ResultSet consulta(String sql) {
