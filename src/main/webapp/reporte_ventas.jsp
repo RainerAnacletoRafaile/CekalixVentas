@@ -27,6 +27,9 @@
 <div class="container py-4">
     <h4 class="mb-2">Reporte de ventas por característica de producto</h4>
     <p class="text-muted">Solo considera órdenes en estado Despachado. Los resultados se ordenan por cajas vendidas.</p>
+    <% if (request.getParameter("reporteError") != null) { %>
+        <div class="alert alert-warning">El rango de fechas no es válido. Revisa las fechas seleccionadas.</div>
+    <% } %>
 
     <form action="Proceso_Venta" method="get" class="row g-3 align-items-end mb-4">
         <input type="hidden" name="accion" value="reporte">
