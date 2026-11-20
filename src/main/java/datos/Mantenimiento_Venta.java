@@ -14,7 +14,7 @@ import modelo.CarritoVenta;
 import modelo.Producto;
 import modelo.Venta;
 
-public class Mantenimiento_Venta extends ConexionBD {
+public class Mantenimiento_Venta {
 
     private static final String SQL_REGISTRAR_VENTA =
         "INSERT INTO venta (id_cliente, id_usuario, fecha, total) VALUES (?, ?, ?, ?)";
