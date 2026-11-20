@@ -29,7 +29,6 @@ public class ConexionBD {
         }
 
         conn = DriverManager.getConnection(URL, USUARIO, CLAVE);
-        sen = conn.createStatement();
         return conn;
     }
 
