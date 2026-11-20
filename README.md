@@ -11,7 +11,7 @@ Sistema web de gestión de ventas B2B de CEKALIX S.A.C., orientado a clientes em
 - MySQL 8+
 - JDBC con MySQL Connector/J
 
-## Estructura actual
+## Estructura del proyecto
 
 ```text
 src/main/java/
@@ -23,9 +23,9 @@ src/main/webapp/   # Vistas JSP, CSS y configuración web
 database/          # Esquema y actualización de la base de datos
 ```
 
-Se conservan los nombres y la organización que ya utiliza el proyecto. No se crean módulos independientes de inventario, importaciones, proveedores ni logística.
+Se mantienen los nombres y la organización que ya utiliza CEKALIX Ventas. El alcance es el proceso comercial B2B; no se crean módulos independientes de inventario, importaciones, proveedores ni logística.
 
-## Funcionalidades de ventas B2B contempladas
+## Funcionalidades de ventas B2B
 
 - Identificación del cliente empresarial mediante RUC y razón social.
 - Consulta de productos por SKU o nombre.
@@ -46,28 +46,29 @@ Se conservan los nombres y la organización que ya utiliza el proyecto. No se cr
 
 1. Inicia MySQL.
 2. Importa `database/cekalix.sql`.
-3. Configura URL, usuario y contraseña en `datos/ConexionBD.java`.
-4. Verifica que MySQL Connector/J esté en `src/main/webapp/WEB-INF/lib`.
+3. Revisa URL, usuario y contraseña en `datos/ConexionBD.java`.
+4. Verifica MySQL Connector/J en `src/main/webapp/WEB-INF/lib`.
 5. Importa el proyecto en Eclipse y ejecútalo en Tomcat.
 
 ### Base de datos existente
 
-Antes de actualizar, realiza un backup y ejecuta una sola vez `database/actualizar_cekalix_ventas_b2b.sql`. El script conserva las existencias anteriores en `stock_fisico`, genera SKU provisionales y agrega el campo de stock reservado.
+Realiza un backup y ejecuta una sola vez `database/actualizar_cekalix_ventas_b2b.sql`. La migración copia las existencias actuales a `stock_fisico`, crea SKU provisionales y agrega el stock reservado.
 
-Los SKU generados tienen formato `SKU-000001`; reemplázalos por los SKU comerciales reales. El valor `unidades_por_caja` queda en cero hasta cargar la conversión correcta. No se inventa esa equivalencia: mientras no se registre, la consulta mostrará "Por definir".
+Los SKU generados tienen formato `SKU-000001`; reemplázalos por los SKU comerciales reales. El valor `unidades_por_caja` queda en cero hasta cargar la equivalencia real. No se inventa esa conversión: mientras no esté definida, la consulta muestra "Por definir".
 
 Las cantidades de venta y existencias se expresan en cajas. La disponibilidad es `stock_fisico - stock_reservado`.
 
-## Reglas de implementación
+## Responsabilidades del código
 
-- Los controladores coordinan las peticiones y validan la sesión.
-- Las clases de `datos` concentran el acceso JDBC y las transacciones.
-- Las clases de `modelo` representan los datos y cálculos del proceso comercial.
-- Las vistas JSP muestran información recibida desde los controladores y no ejecutan SQL.
-- Las conexiones, sentencias y resultados se cierran mediante `try-with-resources`.
+- **Controlador:** valida peticiones y sesión, y coordina el proceso de ventas.
+- **Datos:** concentra las consultas JDBC y las transacciones.
+- **Modelo:** representa clientes, productos, usuarios, ventas y cálculos comerciales.
+- **Vistas:** muestran información enviada por los controladores; no ejecutan SQL.
+
+Las conexiones, sentencias y resultados se cierran con `try-with-resources`.
 
 ## Configuración y seguridad
 
-La configuración inicial usa `localhost:3306`, base `cekalix`, usuario `root` y contraseña vacía. Ajusta los valores a tu instalación local.
+La configuración inicial usa `localhost:3306`, base `cekalix`, usuario `root` y contraseña vacía. Ajusta estos valores a tu instalación local.
 
 El usuario administrador incluido en el SQL es solo para desarrollo. Antes de producción, se debe migrar el almacenamiento de contraseñas a hashes seguros y sacar las credenciales de base de datos del código fuente.
