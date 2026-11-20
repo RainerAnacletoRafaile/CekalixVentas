@@ -4,6 +4,7 @@
         response.sendRedirect("login.jsp");
         return;
     }
+    boolean esAdministrador = Integer.valueOf(1).equals(session.getAttribute("idRol"));
 %>
 <%@ page import="java.util.List" %>
 <%@ page import="modelo.Venta" %>
@@ -102,7 +103,7 @@
                                 </form>
                             <% } %>
 
-                            <% if ("Pendiente".equalsIgnoreCase(estado) || "Confirmada".equalsIgnoreCase(estado)) { %>
+                            <% if (esAdministrador && ("Pendiente".equalsIgnoreCase(estado) || "Confirmada".equalsIgnoreCase(estado))) { %>
                                 <form action="Proceso_Venta" method="post" class="mt-2">
                                     <input type="hidden" name="accion" value="anular">
                                     <input type="hidden" name="id_venta" value="<%= v.getId_venta() %>">
