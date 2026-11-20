@@ -9,7 +9,7 @@ import java.util.List;
 
 import modelo.Cliente;
 
-public class Mantenimiento_Cliente extends ConexionBD {
+public class Mantenimiento_Cliente {
 
     public boolean registro(Cliente cliente) {
         String sql = "INSERT INTO cliente (razon_social, ruc, telefono, direccion) " +
