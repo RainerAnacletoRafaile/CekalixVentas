@@ -5,7 +5,7 @@
         return;
     }
 %>
-<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
 <%@ page import="modelo.Venta" %>
 <%
     if (request.getAttribute("ventas") == null) {
@@ -60,7 +60,7 @@
 
                 <%
                     ArrayList<Venta> ventas =
-                        (ArrayList<Venta>) request.getAttribute("ventas");
+                        (List<Venta>) request.getAttribute("ventas");
 
                     if (ventas != null && !ventas.isEmpty()) {
 
