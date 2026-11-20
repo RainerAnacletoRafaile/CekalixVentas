@@ -2,7 +2,9 @@ package controlador;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
 
 import datos.Mantenimiento_Cliente;
 import datos.Mantenimiento_Producto;
@@ -172,6 +174,33 @@ public class Proceso_Venta extends HttpServlet {
             throws ServletException, IOException {
         HttpSession sesion = request.getSession(false);
         if (!autenticado(sesion, response)) return;
+
+        if ("reporte".equals(request.getParameter("accion"))) {
+            LocalDate desde = null;
+            LocalDate hasta = null;
+            try {
+                String valorDesde = request.getParameter("desde");
+                String valorHasta = request.getParameter("hasta");
+                if (valorDesde != null && !valorDesde.isBlank()) desde = LocalDate.parse(valorDesde);
+                if (valorHasta != null && !valorHasta.isBlank()) hasta = LocalDate.parse(valorHasta);
+                if (desde != null && hasta != null && desde.isAfter(hasta)) {
+                    response.sendRedirect("Proceso_Venta?reporteError=1");
+                    return;
+                }
+            } catch (DateTimeParseException e) {
+                response.sendRedirect("Proceso_Venta?reporteError=1");
+                return;
+            }
+
+            List<Map<String, Object>> reporte =
+                new Mantenimiento_Venta().reportePorCaracteristicas(desde, hasta);
+            request.setAttribute("reporte", reporte);
+            request.setAttribute("desde", desde);
+            request.setAttribute("hasta", hasta);
+            request.getRequestDispatcher("reporte_ventas.jsp").forward(request, response);
+            return;
+        }
+
         List<Venta> ventas = new Mantenimiento_Venta().listar();
         request.setAttribute("ventas", ventas);
         request.getRequestDispatcher("consulta_venta.jsp").forward(request, response);
