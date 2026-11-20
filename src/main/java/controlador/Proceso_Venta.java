@@ -189,7 +189,7 @@ public class Proceso_Venta extends HttpServlet {
                     return;
                 }
             } catch (DateTimeParseException e) {
-                response.sendRedirect("Proceso_Venta?reporteError=1");
+                response.sendRedirect("Proceso_Venta?accion=reporte&reporteError=1");
                 return;
             }
 
