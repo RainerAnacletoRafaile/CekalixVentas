@@ -6,7 +6,7 @@ import java.sql.*;
 import modelo.Venta;
 import modelo.Producto;
 
-public class Mantenimiento_Venta extends Libreria {
+public class Mantenimiento_Venta extends ConexionBD {
 
     ArrayList<Producto> productos = new ArrayList<>();
     ArrayList<Integer> cantidades = new ArrayList<>();
