@@ -3,7 +3,7 @@ package datos;
 import java.sql.*;
 import modelo.Cliente;
 
-public class Mantenimiento_Cliente extends Libreria {
+public class Mantenimiento_Cliente extends ConexionBD {
     private PreparedStatement pst;
 
     public boolean registro(Cliente c) {
